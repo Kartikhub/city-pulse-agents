@@ -1,0 +1,17 @@
+{
+  "capabilities": {},
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["application/json"],
+  "description": "An agent specialized in providing environmental data including weather conditions, air quality measurements, and health recommendations for outdoor activities.",
+  "name": "environment_agent",
+  "skills": [
+    {
+      "id": "environmental_data",
+      "name": "Environmental Data Monitoring",
+      "description": "Monitor and report environmental conditions including weather, air quality, and health recommendations",
+      "tags": ["weather", "air quality", "environment", "health", "outdoor"]
+    }
+  ],
+  "url": "http://localhost:8002/a2a/environment_agent",
+  "version": "1.0.0"
+}

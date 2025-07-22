@@ -1,0 +1,17 @@
+{
+  "capabilities": {},
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["application/json"],
+  "description": "An agent specialized in providing city events and activities information. It can retrieve current events, entertainment options, and activities happening in the city.",
+  "name": "event_agent",
+  "skills": [
+    {
+      "id": "event_information",
+      "name": "City Events Information",
+      "description": "Retrieve information about city events, activities, and entertainment options",
+      "tags": ["events", "activities", "entertainment", "city"]
+    }
+  ],
+  "url": "http://localhost:8001/a2a/event_agent",
+  "version": "1.0.0"
+}

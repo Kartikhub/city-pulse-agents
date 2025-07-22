@@ -1,0 +1,3 @@
+<!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
+
+This workspace contains a simple Python agent system for City Pulse. There are three agents: ConciergeAgent, EventAgent, and EnvironmentAgent. No database is used; all data is dummy data. The ConciergeAgent orchestrates requests to the EventAgent and EnvironmentAgent and returns combined results. Each agent is implemented as a separate Python module. The main script demonstrates their interaction.
