@@ -42,13 +42,29 @@ example_tool = ExampleTool([
     {
         "input": {
             "role": "user",
-            "parts": [{"text": "Give me both event and environment information."}],
+            "parts": [{"text": "What events are happening on Friday"}],
         },
         "output": [
             {
-                "role": "model", 
-                "parts": [{"text": "Here's the latest city information: There's a Summer Music Festival tonight at Central Park, and the air quality is Good with pleasant weather conditions."}],
+                "role": "model",
+                "parts": [{"text": "On Friday, July 25th, there is a Summer Music Festival at Central Park from 7:00 PM to 11:00 PM."}],
+            }
+        ],
+    },
+    {
+        "input": {
+            "role": "user",
+            "parts": [{"text": "What are the events happening on Sunday and what will the air quality be in those events?"}],
+        },
+        "output": [
+            {
+                "role": "model",
+                "parts": [{"text": "On Sunday, July 27th, there is a Tech Conference at Convention Center from 9:00 AM to 5:00 PM."}],
             },
+            {
+                "role": "model",
+                "parts": [{"text": "Air quality at Convention Center: Good (Index: 38). Excellent conditions for the conference!"}],
+            }
         ],
     },
 ])
@@ -63,7 +79,7 @@ event_agent = RemoteA2aAgent(
 
 environment_agent = RemoteA2aAgent(
     name="environment_agent", 
-    description="Agent that handles environmental data and weather information.",
+    description="Agent that handles environmental data and weather information for all locations or specific locations.",
     agent_card=(
         f"http://localhost:8002/a2a/environment_agent{AGENT_CARD_WELL_KNOWN_PATH}"
     ),
@@ -73,17 +89,18 @@ root_agent = Agent(
     model="gemini-2.0-flash",
     name="concierge_agent",
     instruction="""
-      You are the City Pulse Concierge Agent, a helpful assistant that provides personalized city information.
-      You delegate event-related requests to the event_agent and environment-related requests to the environment_agent.
-      Follow these steps:
-      1. If the user asks about events, activities, or entertainment, delegate to the event_agent.
-      2. If the user asks about weather, air quality, or environmental conditions, delegate to the environment_agent.
-      3. If the user asks for comprehensive city information, call both agents and combine the results.
-      4. Always provide personalized, helpful responses based on the agent data.
-      Always clarify and combine the results in a user-friendly manner.
+      You are the City Pulse Concierge Agent that provides city information.
+      You have access to event_agent and environment_agent.
+      
+      CRITICAL: When users ask about BOTH events AND air quality:
+      1. Call event_agent to get events and locations
+      2. IMMEDIATELY call environment_agent with the location from step 1
+      3. Provide both results in one response
+      
+      Never say you cannot provide air quality information - you can always call environment_agent.
     """,
     global_instruction=(
-        "You are City Pulse Concierge, ready to help with city events and environmental information."
+        "You are City Pulse Bot, ready to help with city events and environmental information based on location."
     ),
     sub_agents=[event_agent, environment_agent],
     tools=[example_tool],
