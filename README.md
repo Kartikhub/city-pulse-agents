@@ -35,11 +35,12 @@ This system demonstrates A2A architecture with four specialized agents:
 
 ### Running the System
 
-1. **Start the Event Agent server**:
+1. **Start the Event Agent server (with Firestore MCP integration)**:
    ```bash
    cd events/event_agent
    adk api_server --port 8001
    ```
+   > **Note**: The Event Agent now uses Firestore via MCP for persistent event storage. See `README_MCP_FIRESTORE.md` for setup details.
 
 2. **Start the Environment Agent server**:
    ```bash
@@ -76,18 +77,24 @@ This system demonstrates A2A architecture with four specialized agents:
 - Communication via HTTP using A2A protocol
 - Agent cards define capabilities and endpoints
 
-### 2. **Agent Orchestration**
+### 2. **Firestore Database Integration (Event Agent)**
+- Event Agent uses Firestore for persistent event storage
+- MCP (Model Context Protocol) for database communication
+- CRUD operations: Create, Read, Update, Delete events
+- Fallback to dummy data if Firestore is unavailable
+
+### 3. **Agent Orchestration**
 - Concierge agent intelligently delegates based on user requests
 - Can chain operations and combine results from multiple agents
 - Provides unified, user-friendly responses
 
-### 3. **Social Media & News Integration**
+### 4. **Social Media & News Integration**
 - Unified social media and news agent 
 - Trending topics and social sentiment analysis
 - Breaking news with integrated regular news
 - Area-specific news for Bangalore neighborhoods
 
-### 4. **Dummy Data Implementation** 
+### 5. **Dummy Data Implementation** 
 - No database required - all data is hardcoded for demonstration
 - Realistic sample data for events and environmental conditions
 - Easy to extend with real data sources
@@ -96,28 +103,32 @@ This system demonstrates A2A architecture with four specialized agents:
 
 ```
 city-pulse-agents/
+├── README.md                     # Main project documentation
+├── README_MCP_FIRESTORE.md       # Firestore MCP integration guide
+├── firestore_mcp_server.py       # MCP server for Firestore operations
+├── setup_firestore_events.py     # Initialize Firestore with sample data
 ├── concierge_agent/
 │   ├── __init__.py
-│   ├── agent.py          # Main orchestrator with RemoteA2aAgent references
+│   ├── agent.py                  # Main orchestrator with RemoteA2aAgent references
 │   └── .env
 ├── events/
 │   └── event_agent/
 │       ├── __init__.py  
-│       ├── agent.py      # Event data provider
-│       ├── agent.json    # A2A agent card
+│       ├── agent.py              # Event data provider with Firestore MCP
+│       ├── agent.json            # A2A agent card
 │       └── .env
 ├── environment/
 │   └── environment_agent/
 │       ├── __init__.py
-│       ├── agent.py      # Environment data provider  
-│       ├── agent.json    # A2A agent card
+│       ├── agent.py              # Environment data provider  
+│       ├── agent.json            # A2A agent card
 │       └── .env
-└── social_news/
-    └── social_news_agent/
+└── social/
+    └── social_agent/
         ├── __init__.py
-        ├── agent.py      # Social media & news data provider
-        ├── agent.json    # A2A agent card
+        ├── agent.py              # Social media & news data provider
+        ├── agent.json            # A2A agent card
         └── .env
 ```
 
-This follows the same pattern as the original ADK A2A Basic sample, adapted for City Pulse use cases.
+This follows the same pattern as the original ADK A2A Basic sample, adapted for City Pulse use cases, with added MCP integration for persistent data storage.

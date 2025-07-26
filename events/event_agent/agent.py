@@ -12,15 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from google.adk import Agent
 from google.genai import types
+from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, StdioConnectionParams
 
 
-async def get_city_events() -> str:
-    """Get current city events and activities.
+# Get the absolute path to the Firestore MCP server
+FIRESTORE_MCP_SERVER_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "firestore_mcp_server.py"
+)
+
+
+async def get_city_events_fallback() -> str:
+    """Fallback function to get dummy city events if Firestore is unavailable.
     
     Returns:
-        A string with current city events information.
+        A string with fallback city events information.
     """
     events_data = {
         "events": [
@@ -52,20 +61,47 @@ async def get_city_events() -> str:
     for event in events_data["events"]:
         event_list.append(f"{event['name']} at {event['location']} on {event['date']} from {event['time']} ({event['category']})")
     
-    return f"Current city events: {', '.join(event_list)}"
+    return f"Current city events (fallback data): {', '.join(event_list)}"
 
 
 root_agent = Agent(
     model='gemini-2.0-flash',
     name='event_agent',
-    description='Event agent that provides information about city events and activities.',
+    description='Event agent that provides information about city events and activities using Firestore via MCP.',
     instruction="""
-      You provide information about city events, activities, and entertainment.
-      When asked about events, call the get_city_events tool to get current event information.
+      You are an Event Agent that manages city events and activities using Firestore database through MCP (Model Context Protocol).
+      
+      CAPABILITIES:
+      - Get all events from Firestore database
+      - Add new events to Firestore
+      - Search events by date or category
+      - Update existing events
+      - Delete events
+      
+      TOOLS AVAILABLE:
+      - get_events: Retrieve all events from Firestore
+      - add_event: Add a new event to Firestore
+      - get_events_by_date: Get events for a specific date
+      - get_events_by_category: Get events by category
+      - update_event: Update an existing event
+      - delete_event: Delete an event
+      
+      ALWAYS use the Firestore tools to get real, up-to-date event data from the database.
       Be helpful and provide clear details about timing, location, and event categories.
+      Format dates in YYYY-MM-DD format and times as ranges (e.g., "7:00 PM - 11:00 PM").
     """,
     tools=[
-        get_city_events,
+        MCPToolset(
+            connection_params=StdioConnectionParams(
+                server_params={
+                    'command': 'python',
+                    'args': [FIRESTORE_MCP_SERVER_PATH],
+                }
+            ),
+            # Optional: Filter specific tools if needed
+            # tool_filter=['get_events', 'add_event', 'get_events_by_date']
+        ),
+        # Removed fallback - agent will only use Firestore
     ],
     generate_content_config=types.GenerateContentConfig(
         safety_settings=[
