@@ -1,0 +1,17 @@
+{
+  "capabilities": {},
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["application/json"],
+  "description": "An agent specialized in analyzing city data and providing insights. It can analyze various city metrics and identify trends and patterns.",
+  "name": "analyst_agent",
+  "skills": [
+    {
+      "id": "city_analysis",
+      "name": "City Data Analysis",
+      "description": "Analyze city metrics and provide insights about population, employment, transportation, and other key indicators",
+      "tags": ["analysis", "metrics", "insights", "city-data"]
+    }
+  ],
+  "url": "http://localhost:8003/a2a/analyst_agent",
+  "version": "1.0.0"
+}
