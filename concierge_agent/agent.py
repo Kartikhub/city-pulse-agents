@@ -42,6 +42,24 @@ example_tool = ExampleTool([
     {
         "input": {
             "role": "user",
+            "parts": [{"text": "What's trending on social media in Bangalore?"}],
+        },
+        "output": [
+            {"role": "model", "parts": [{"text": "Trending in Bangalore: #BangaloreTraffic, #PowerCut, #AirQuality, #TechCity, #BLRMusic. Recent posts show mixed sentiment about traffic issues but positive excitement about the music scene."}]}
+        ],
+    },
+    {
+        "input": {
+            "role": "user",
+            "parts": [{"text": "Any breaking news today?"}],
+        },
+        "output": [
+            {"role": "model", "parts": [{"text": "🚨 Breaking News: BBMP Announces New Digital Governance Platform - Citizens can now access all municipal services through a single digital platform. Published 2 hours ago."}]}
+        ],
+    },
+    {
+        "input": {
+            "role": "user",
             "parts": [{"text": "What events are happening on Friday"}],
         },
         "output": [
@@ -67,6 +85,18 @@ example_tool = ExampleTool([
             }
         ],
     },
+    {
+        "input": {
+            "role": "user",
+            "parts": [{"text": "Give me the complete city pulse for Bangalore"}],
+        },
+        "output": [
+            {
+                "role": "model",
+                "parts": [{"text": "🌆 **BANGALORE CITY PULSE - July 26, 2025**\n\n📅 **EVENTS:** Summer Music Festival at Central Park tonight (7:00 PM - 11:00 PM)\n\n🌍 **ENVIRONMENT:** Air quality is Good (Index: 42) - perfect for outdoor activities!\n\n📱 **SOCIAL BUZZ:** Trending: #TechCity, #BLRMusic, #PowerCut. People are excited about tech meetups but frustrated with infrastructure issues.\n\n📰 **BREAKING NEWS:** 🔴 BBMP launches new digital governance platform at 8:00 PM today - all municipal services now available online!\n\nYour city is vibrant with events, clean air, active social discussions, and progressive governance updates!"}],
+            }
+        ],
+    },
 ])
 
 event_agent = RemoteA2aAgent(
@@ -85,24 +115,38 @@ environment_agent = RemoteA2aAgent(
     ),
 )
 
+social_news_agent = RemoteA2aAgent(
+    name="social_news_agent",
+    description="Agent that handles social media posts, trending topics, news articles with integrated breaking news, and area-specific updates for Bangalore.",
+    agent_card=(
+        f"http://localhost:8005/a2a/social_news_agent{AGENT_CARD_WELL_KNOWN_PATH}"
+    ),
+)
+
 root_agent = Agent(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash-lite",
     name="concierge_agent",
     instruction="""
-      You are the City Pulse Concierge Agent that provides city information.
-      You have access to event_agent and environment_agent.
+      You are the City Pulse Concierge Agent that provides comprehensive city information for Bangalore.
+      You have access to event_agent, environment_agent, and social_news_agent.
       
-      CRITICAL: When users ask about BOTH events AND air quality:
-      1. Call event_agent to get events and locations
-      2. IMMEDIATELY call environment_agent with the location from step 1
-      3. Provide both results in one response
+      CAPABILITIES:
+      - event_agent: Get events and activities happening in the city
+      - environment_agent: Get environmental data, weather, and air quality information
+      - social_news_agent: Get social media posts, trending topics, news articles with integrated breaking news, and area-specific updates (excludes traffic/weather/environment)
       
-      Never say you cannot provide air quality information - you can always call environment_agent.
+      CRITICAL: When users ask about multiple types of information:
+      1. Call relevant agents to get specific data
+      2. Combine and present results in a cohesive response
+      3. Always provide comprehensive city pulse information when requested
+      
+      For social media trending topics, news articles, or breaking news, use social_news_agent.
+      Never say you cannot provide information - you have access to all city data through specialized agents.
     """,
     global_instruction=(
-        "You are City Pulse Bot, ready to help with city events and environmental information based on location."
+        "You are City Pulse Bot, ready to help with comprehensive city information including events, environment, social media, and news for Bangalore."
     ),
-    sub_agents=[event_agent, environment_agent],
+    sub_agents=[event_agent, environment_agent, social_news_agent],
     tools=[example_tool],
     generate_content_config=types.GenerateContentConfig(
         safety_settings=[

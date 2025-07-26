@@ -90,7 +90,7 @@ async def get_environment_data(location: str = "all") -> str:
 
 
 root_agent = Agent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash-lite',
     name='environment_agent',
     description='Environment agent that provides environmental data including weather, air quality, and health recommendations.',
     instruction="""

@@ -1,0 +1,35 @@
+{
+  "capabilities": {},
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["application/json"],
+  "description": "A unified agent that provides both social media and news information for Bangalore. Handles social media posts, trending topics, news articles with integrated breaking news, and area-specific updates. Excludes traffic, weather, and environmental news as those are handled by specialized agents.",
+  "name": "social_news_agent",
+  "skills": [
+    {
+      "id": "trending_topics",
+      "name": "Social Media Trending Topics",
+      "description": "Retrieve current trending topics on social media in Bangalore",
+      "tags": ["trending", "social media", "bangalore", "topics"]
+    },
+    {
+      "id": "social_posts",
+      "name": "Social Media Posts",
+      "description": "Get recent social media posts about Bangalore",
+      "tags": ["posts", "social media", "bangalore", "content"]
+    },
+    {
+      "id": "news_articles",
+      "name": "News Articles with Breaking News",
+      "description": "Retrieve current news articles for Bangalore including integrated breaking news from various categories",
+      "tags": ["news", "articles", "breaking", "bangalore", "technology", "business", "culture", "governance"]
+    },
+    {
+      "id": "area_news",
+      "name": "Area-specific News",
+      "description": "Get news specific to areas in Bangalore like Koramangala, Indiranagar, etc.",
+      "tags": ["area", "local", "news", "bangalore", "neighborhoods"]
+    }
+  ],
+  "url": "http://localhost:8005/a2a/social_news_agent",
+  "version": "1.0.0"
+}
