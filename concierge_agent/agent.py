@@ -17,6 +17,7 @@ from google.adk.agents.remote_a2a_agent import AGENT_CARD_WELL_KNOWN_PATH
 from google.adk.agents.remote_a2a_agent import RemoteA2aAgent
 from google.adk.tools.example_tool import ExampleTool
 from google.genai import types
+import json
 
 
 example_tool = ExampleTool([
@@ -66,8 +67,45 @@ example_tool = ExampleTool([
                 "parts": [{"text": "Air quality at Convention Center: Good (Index: 38). Excellent conditions for the conference!"}],
             }
         ],
-    },
+    }
 ])
+
+def return_events_ui(type: str, name: str, location: str, description: str) -> str:
+    """
+    {
+    "name": "return_events_ui",
+    "description": "Creates or displays an event in the user interface with the given details. Use this to add new events to a calendar or list.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+        "type": {
+            "type": "string",
+            "description": "The category or type of the event, for example: 'meeting', 'appointment', 'social', or 'reminder'."
+        },
+        "name": {
+            "type": "string",
+            "description": "The official name or title of the event."
+        },
+        "location": {
+            "type": "string",
+            "description": "The physical address or virtual link for the event location."
+        },
+        "description": {
+            "type": "string",
+            "description": "A brief summary or detailed description of the event's purpose and agenda."
+        }
+        },
+        "required": ["type", "name", "location", "description"]
+    }
+    }
+    """
+    event_data = {
+            "type": type,
+            "name": name,
+            "location": location,
+            "description": description
+        }
+    return json.dumps(event_data)
 
 event_agent = RemoteA2aAgent(
     name="event_agent",
@@ -86,24 +124,26 @@ environment_agent = RemoteA2aAgent(
 )
 
 root_agent = Agent(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     name="concierge_agent",
     instruction="""
+      CRITICAL: **Call the respective return_element_ui tool to return properly formatted data if called by a UI user before final response.**
+
       You are the City Pulse Concierge Agent that provides city information.
       You have access to event_agent and environment_agent.
-      
+      You have 2 types of interactions.
+      1: User Interaction
       CRITICAL: When users ask about BOTH events AND air quality:
       1. Call event_agent to get events and locations
       2. IMMEDIATELY call environment_agent with the location from step 1
       3. Provide both results in one response
       
-      Never say you cannot provide air quality information - you can always call environment_agent.
     """,
     global_instruction=(
-        "You are City Pulse Bot, ready to help with city events and environmental information based on location."
+        "You are City Pulse Concierge agent, serving UI for both API and user interactions, ready to help with city events and environmental information based on location."
     ),
     sub_agents=[event_agent, environment_agent],
-    tools=[example_tool],
+    tools=[example_tool, return_events_ui],
     generate_content_config=types.GenerateContentConfig(
         safety_settings=[
             types.SafetySetting(
