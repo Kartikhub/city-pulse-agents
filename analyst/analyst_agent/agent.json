@@ -12,6 +12,6 @@
       "tags": ["analysis", "metrics", "insights", "city-data"]
     }
   ],
-  "url": "http://localhost:8003/a2a/analyst_agent",
+  "url": "http://localhost:8006/a2a/analyst_agent",
   "version": "1.0.0"
 }
