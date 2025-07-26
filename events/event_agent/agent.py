@@ -28,21 +28,21 @@ async def get_city_events() -> str:
                 "name": "Summer Music Festival",
                 "location": "Central Park",
                 "time": "7:00 PM - 11:00 PM",
-                "date": "2025-07-25",
+                "date": "2025-08-02",
                 "category": "Entertainment"
             },
             {
                 "name": "Farmers Market", 
                 "location": "Downtown Square",
                 "time": "8:00 AM - 2:00 PM",
-                "date": "2025-07-26",
+                "date": "2025-08-02",
                 "category": "Shopping"
             },
             {
                 "name": "Tech Conference",
                 "location": "Convention Center", 
                 "time": "9:00 AM - 5:00 PM",
-                "date": "2025-07-27",
+                "date": "2025-08-03",
                 "category": "Business"
             }
         ]
