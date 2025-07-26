@@ -67,6 +67,30 @@ example_tool = ExampleTool([
             }
         ],
     },
+    {
+        "input": {
+            "role": "user",
+            "parts": [{"text": "Are there any incidents or reports I should know about?"}],
+        },
+        "output": [
+            {
+                "role": "model",
+                "parts": [{"text": "Here are recent user reports: Report ID: lg0g7PXXVlhd63raAa2P, Type: Flooding, Location: BIEC, Description: Flood inside hall 1, Time: July 26, 2025 at 12:17:49 PM UTC+5:30"}],
+            }
+        ],
+    },
+    {
+        "input": {
+            "role": "user",
+            "parts": [{"text": "What emergency reports are there at BIEC?"}],
+        },
+        "output": [
+            {
+                "role": "model",
+                "parts": [{"text": "Emergency reports at BIEC: Report ID: lg0g7PXXVlhd63raAa2P, Type: Flooding, Description: Flood inside hall 1, reported today at 12:17:49 PM. Please exercise caution in that area."}],
+            }
+        ],
+    },
 ])
 
 event_agent = RemoteA2aAgent(
@@ -85,24 +109,37 @@ environment_agent = RemoteA2aAgent(
     ),
 )
 
+user_report_agent = RemoteA2aAgent(
+    name="user_report_agent",
+    description="Agent that handles user reports, incidents, emergencies, and maintenance issues reported by citizens.",
+    agent_card=(
+        f"http://localhost:8003/a2a/user_report_agent{AGENT_CARD_WELL_KNOWN_PATH}"
+    ),
+)
+
 root_agent = Agent(
     model="gemini-2.0-flash",
     name="concierge_agent",
     instruction="""
-      You are the City Pulse Concierge Agent that provides city information.
-      You have access to event_agent and environment_agent.
+      You are the City Pulse Concierge Agent that provides comprehensive city information.
+      You have access to event_agent, environment_agent, and user_report_agent.
       
       CRITICAL: When users ask about BOTH events AND air quality:
       1. Call event_agent to get events and locations
       2. IMMEDIATELY call environment_agent with the location from step 1
       3. Provide both results in one response
       
-      Never say you cannot provide air quality information - you can always call environment_agent.
+      For user reports and incidents:
+      - Use user_report_agent to get information about citizen reports, emergencies, infrastructure issues, and maintenance requests
+      - Filter by incident type (Flooding, Infrastructure, Emergency, Maintenance) or location as needed
+      - Prioritize emergency and safety-related incidents in responses
+      
+      Never say you cannot provide air quality or incident information - you can always call the respective agents.
     """,
     global_instruction=(
-        "You are City Pulse Bot, ready to help with city events and environmental information based on location."
+        "You are City Pulse Bot, ready to help with city events, environmental information, and citizen reports based on location."
     ),
-    sub_agents=[event_agent, environment_agent],
+    sub_agents=[event_agent, environment_agent, user_report_agent],
     tools=[example_tool],
     generate_content_config=types.GenerateContentConfig(
         safety_settings=[
