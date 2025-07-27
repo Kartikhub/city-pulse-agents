@@ -12,12 +12,94 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+
 from google.adk.agents import Agent
 from google.adk.agents.remote_a2a_agent import AGENT_CARD_WELL_KNOWN_PATH
 from google.adk.agents.remote_a2a_agent import RemoteA2aAgent
 from google.adk.tools.example_tool import ExampleTool
 from google.genai import types
-import json
+
+
+# --- JSON Formatter Sub-Agent ---
+def format_to_json(data: str, data_type: str = "general") -> str:
+    """Convert text data to structured JSON format."""
+    try:
+        if data_type == "events":
+            # Parse event data and structure it
+            lines = data.split(',')
+            events = []
+            for line in lines:
+                line = line.strip()
+                if 'at' in line and 'on' in line:
+                    parts = line.split(' at ')
+                    if len(parts) >= 2:
+                        name = parts[0].strip()
+                        rest = parts[1].split(' on ')
+                        if len(rest) >= 2:
+                            location = rest[0].strip()
+                            date_time = rest[1].strip()
+                            events.append({
+                                "name": name,
+                                "location": location,
+                                "datetime": date_time
+                            })
+            return json.dumps({"events": events}, indent=2)
+        
+        elif data_type == "environment":
+            # Parse environmental data and structure it
+            result = {"environmental_data": {}}
+            if "Temperature" in data:
+                import re
+                temp_match = re.search(r'Temperature (\d+°C)', data)
+                if temp_match:
+                    result["environmental_data"]["temperature"] = temp_match.group(1)
+                
+                humidity_match = re.search(r'Humidity (\d+%)', data)
+                if humidity_match:
+                    result["environmental_data"]["humidity"] = humidity_match.group(1)
+                
+                weather_match = re.search(r'Weather ([^,]+)', data)
+                if weather_match:
+                    result["environmental_data"]["weather"] = weather_match.group(1).strip()
+                
+                # Extract air quality info
+                if "Air Quality" in data:
+                    aq_match = re.search(r'Air Quality: ([^(]+)\(Index: (\d+)', data)
+                    if aq_match:
+                        result["environmental_data"]["air_quality"] = {
+                            "status": aq_match.group(1).strip(),
+                            "index": int(aq_match.group(2))
+                        }
+            
+            return json.dumps(result, indent=2)
+        
+        else:
+            # General formatting
+            return json.dumps({"data": data, "type": data_type}, indent=2)
+            
+    except Exception as e:
+        return json.dumps({"error": f"Failed to format data: {str(e)}", "raw_data": data}, indent=2)
+
+
+json_formatter_agent = Agent(
+    name="json_formatter_agent",
+    description="Handles converting text data to structured JSON format.",
+    instruction="""
+      You are responsible for converting text data received from other agents into structured JSON format.
+      When asked to format data, you must call the format_to_json tool with the data and specify the data type.
+      Data types can be: 'events', 'environment', or 'general'.
+    """,
+    tools=[format_to_json],
+    generate_content_config=types.GenerateContentConfig(
+        safety_settings=[
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                threshold=types.HarmBlockThreshold.OFF,
+            ),
+        ]
+    ),
+)
 
 
 example_tool = ExampleTool([
@@ -67,45 +149,8 @@ example_tool = ExampleTool([
                 "parts": [{"text": "Air quality at Convention Center: Good (Index: 38). Excellent conditions for the conference!"}],
             }
         ],
-    }
+    },
 ])
-
-def return_events_ui(type: str, name: str, location: str, description: str) -> str:
-    """
-    {
-    "name": "return_events_ui",
-    "description": "Creates or displays an event in the user interface with the given details. Use this to add new events to a calendar or list.",
-    "parameters": {
-        "type": "object",
-        "properties": {
-        "type": {
-            "type": "string",
-            "description": "The category or type of the event, for example: 'meeting', 'appointment', 'social', or 'reminder'."
-        },
-        "name": {
-            "type": "string",
-            "description": "The official name or title of the event."
-        },
-        "location": {
-            "type": "string",
-            "description": "The physical address or virtual link for the event location."
-        },
-        "description": {
-            "type": "string",
-            "description": "A brief summary or detailed description of the event's purpose and agenda."
-        }
-        },
-        "required": ["type", "name", "location", "description"]
-    }
-    }
-    """
-    event_data = {
-            "type": type,
-            "name": name,
-            "location": location,
-            "description": description
-        }
-    return json.dumps(event_data)
 
 event_agent = RemoteA2aAgent(
     name="event_agent",
@@ -124,26 +169,26 @@ environment_agent = RemoteA2aAgent(
 )
 
 root_agent = Agent(
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     name="concierge_agent",
     instruction="""
       CRITICAL: **Call the respective return_element_ui tool to return properly formatted data if called by a UI user before final response.**
 
       You are the City Pulse Concierge Agent that provides city information.
       You have access to event_agent and environment_agent.
-      You have 2 types of interactions.
-      1: User Interaction
+      
       CRITICAL: When users ask about BOTH events AND air quality:
       1. Call event_agent to get events and locations
       2. IMMEDIATELY call environment_agent with the location from step 1
       3. Provide both results in one response
       
+      Never say you cannot provide air quality information - you can always call environment_agent.
     """,
     global_instruction=(
         "You are City Pulse Concierge agent, serving UI for both API and user interactions, ready to help with city events and environmental information based on location."
     ),
     sub_agents=[event_agent, environment_agent],
-    tools=[example_tool, return_events_ui],
+    tools=[example_tool],
     generate_content_config=types.GenerateContentConfig(
         safety_settings=[
             types.SafetySetting(

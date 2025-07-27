@@ -56,7 +56,7 @@ async def get_city_events() -> str:
 
 
 root_agent = Agent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash-lite',
     name='event_agent',
     description='Event agent that provides information about city events and activities.',
     instruction="""
