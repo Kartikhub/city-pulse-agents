@@ -7,7 +7,32 @@ import os
 FIREBASE_CONFIG = {
     "service_account_path": os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH", "path/to/firebase-service-account.json"),
     "project_id": os.getenv("FIREBASE_PROJECT_ID", "your-firebase-project-id"),
-    "database_url": os.getenv("FIREBASE_DATABASE_URL", "https://your-project.firebaseio.com/")
+    "database_url": os.getenv("FIREBASE_DATABASE_URL", "https://your-project.firebaseio.com/"),
+    "enabled": os.getenv("FIREBASE_ENABLED", "false").lower() == "true"  # Enable/disable Firebase
+}
+
+# Google Cloud PubSub Configuration
+PUBSUB_CONFIG = {
+    "project_id": os.getenv("GOOGLE_CLOUD_PROJECT_ID", "your-gcp-project-id"),
+    "credentials_path": os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "path/to/gcp-service-account.json"),
+    "enabled": os.getenv("PUBSUB_ENABLED", "false").lower() == "true",  # Enable/disable PubSub
+    "subscription_patterns": {
+        "user-reports": "user-reports-topic",
+        "environmental-data": "environmental-data-topic",
+        "events": "events-topic",
+        "emergencies": "emergencies-topic"
+    }
+}
+
+# AI Agent Configuration
+AI_AGENT_CONFIG = {
+    "use_real_ai": os.getenv("USE_REAL_AI", "true").lower() == "true",
+    "model": os.getenv("AI_MODEL", "gemini-2.0-flash"),
+    "confidence_threshold": float(os.getenv("AI_CONFIDENCE_THRESHOLD", "0.7")),
+    "learning_enabled": os.getenv("AI_LEARNING_ENABLED", "true").lower() == "true",
+    "explanation_required": os.getenv("AI_EXPLANATION_REQUIRED", "true").lower() == "true",
+    "fallback_to_simulation": os.getenv("AI_FALLBACK_ENABLED", "true").lower() == "true",
+    "response_timeout": float(os.getenv("AI_RESPONSE_TIMEOUT", "5.0"))
 }
 
 # Notification Settings

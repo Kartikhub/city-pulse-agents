@@ -1,0 +1,55 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+.report/
+
+# Runtime data
+*.pids
+*.d.ts.map
+*.js.map
+
+# Directory for compiled output
+dist/
+dist-ssr/
+
+# Dependencies
+node_modules/
+/npm-debug.log
+
+# IDEs and editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Vue specific
+*.vue.js
+
+# Vite specific
+.vite/
+
+# Firebase specific (if applicable)
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
+# Capacitor specific (if applicable)
+android/
+ios/
