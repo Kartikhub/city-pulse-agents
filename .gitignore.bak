@@ -4,4 +4,3 @@
 .venv*/
 .github/
 __pycache__/
-*/security
