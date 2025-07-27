@@ -5,3 +5,12 @@
 .github/
 __pycache__/
 */security
+
+# Firebase service account files (contains sensitive credentials)
+**/firebase-service-account.json
+firebase-service-account.json
+
+# Other sensitive files
+**/*-service-account.json
+*.key
+*.pem
