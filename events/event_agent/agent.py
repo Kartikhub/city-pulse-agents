@@ -56,13 +56,13 @@ async def get_city_events() -> str:
 
 
 root_agent = Agent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash-lite',
     name='event_agent',
     description='Event agent that provides information about city events and activities.',
     instruction="""
       You provide information about city events, activities, and entertainment.
       When asked about events, call the get_city_events tool to get current event information.
-      Be helpful and provide clear details about timing, location, and event categories.
+      Return a JSON formatted response.
     """,
     tools=[
         get_city_events,

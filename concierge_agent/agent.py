@@ -12,11 +12,94 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+
 from google.adk.agents import Agent
 from google.adk.agents.remote_a2a_agent import AGENT_CARD_WELL_KNOWN_PATH
 from google.adk.agents.remote_a2a_agent import RemoteA2aAgent
 from google.adk.tools.example_tool import ExampleTool
 from google.genai import types
+
+
+# --- JSON Formatter Sub-Agent ---
+def format_to_json(data: str, data_type: str = "general") -> str:
+    """Convert text data to structured JSON format."""
+    try:
+        if data_type == "events":
+            # Parse event data and structure it
+            lines = data.split(',')
+            events = []
+            for line in lines:
+                line = line.strip()
+                if 'at' in line and 'on' in line:
+                    parts = line.split(' at ')
+                    if len(parts) >= 2:
+                        name = parts[0].strip()
+                        rest = parts[1].split(' on ')
+                        if len(rest) >= 2:
+                            location = rest[0].strip()
+                            date_time = rest[1].strip()
+                            events.append({
+                                "name": name,
+                                "location": location,
+                                "datetime": date_time
+                            })
+            return json.dumps({"events": events}, indent=2)
+        
+        elif data_type == "environment":
+            # Parse environmental data and structure it
+            result = {"environmental_data": {}}
+            if "Temperature" in data:
+                import re
+                temp_match = re.search(r'Temperature (\d+°C)', data)
+                if temp_match:
+                    result["environmental_data"]["temperature"] = temp_match.group(1)
+                
+                humidity_match = re.search(r'Humidity (\d+%)', data)
+                if humidity_match:
+                    result["environmental_data"]["humidity"] = humidity_match.group(1)
+                
+                weather_match = re.search(r'Weather ([^,]+)', data)
+                if weather_match:
+                    result["environmental_data"]["weather"] = weather_match.group(1).strip()
+                
+                # Extract air quality info
+                if "Air Quality" in data:
+                    aq_match = re.search(r'Air Quality: ([^(]+)\(Index: (\d+)', data)
+                    if aq_match:
+                        result["environmental_data"]["air_quality"] = {
+                            "status": aq_match.group(1).strip(),
+                            "index": int(aq_match.group(2))
+                        }
+            
+            return json.dumps(result, indent=2)
+        
+        else:
+            # General formatting
+            return json.dumps({"data": data, "type": data_type}, indent=2)
+            
+    except Exception as e:
+        return json.dumps({"error": f"Failed to format data: {str(e)}", "raw_data": data}, indent=2)
+
+
+json_formatter_agent = Agent(
+    name="json_formatter_agent",
+    description="Handles converting text data to structured JSON format.",
+    instruction="""
+      You are responsible for converting text data received from other agents into structured JSON format.
+      When asked to format data, you must call the format_to_json tool with the data and specify the data type.
+      Data types can be: 'events', 'environment', or 'general'.
+    """,
+    tools=[format_to_json],
+    generate_content_config=types.GenerateContentConfig(
+        safety_settings=[
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                threshold=types.HarmBlockThreshold.OFF,
+            ),
+        ]
+    ),
+)
 
 
 example_tool = ExampleTool([
@@ -121,8 +204,11 @@ root_agent = Agent(
     model="gemini-2.0-flash",
     name="concierge_agent",
     instruction="""
+
       You are the City Pulse Concierge Agent that provides comprehensive city information.
       You have access to event_agent, environment_agent, and user_report_agent.
+
+  
       
       CRITICAL: When users ask about BOTH events AND air quality:
       1. Call event_agent to get events and locations
@@ -138,6 +224,7 @@ root_agent = Agent(
     """,
     global_instruction=(
         "You are City Pulse Bot, ready to help with city events, environmental information, and citizen reports based on location."
+
     ),
     sub_agents=[event_agent, environment_agent, user_report_agent],
     tools=[example_tool],
