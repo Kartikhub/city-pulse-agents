@@ -1,0 +1,23 @@
+{
+  "capabilities": {},
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["application/json"],
+  "description": "An agent specialized in providing user reports and incident information. It can retrieve citizen reports, emergency situations, infrastructure issues, and maintenance requests from across the city.",
+  "name": "user_report_agent",
+  "skills": [
+    {
+      "id": "user_reports",
+      "name": "User Reports and Incidents",
+      "description": "Retrieve information about user reports, incidents, emergencies, and maintenance issues reported by citizens",
+      "tags": ["reports", "incidents", "emergency", "infrastructure", "maintenance", "citizen reports"]
+    },
+    {
+      "id": "report_details",
+      "name": "Detailed Report Information",
+      "description": "Get detailed information about specific reports using document IDs",
+      "tags": ["report details", "document lookup", "incident details"]
+    }
+  ],
+  "url": "http://localhost:8003/a2a/user_report_agent",
+  "version": "1.0.0"
+}

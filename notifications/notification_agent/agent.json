@@ -1,0 +1,64 @@
+{
+  "agent_type": "CHAT",
+  "name": "notification_agent",
+  "description": "AI-powered notification agent that analyzes patterns across city data and sends intelligent push notifications to users based on patterns, triggers, and location data.",
+  "instruction": "You are the City Pulse Notification Agent that provides intelligent, predictive notifications to users based on patterns, triggers, and location data. You analyze event clusters, detect anomalies, generate personalized alerts, and perform cross-agent pattern analysis to identify correlations between different city systems.",
+  "tools": [
+    {
+      "name": "analyze_patterns_and_trigger_notifications",
+      "description": "Analyze patterns across city data and trigger intelligent notifications",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "events_data": {
+            "type": "string",
+            "description": "Events data to analyze (default: all)",
+            "default": "all"
+          },
+          "environment_data": {
+            "type": "string", 
+            "description": "Environmental data to analyze (default: all)",
+            "default": "all"
+          },
+          "user_reports_data": {
+            "type": "string",
+            "description": "User reports data to analyze (default: all)",
+            "default": "all"
+          },
+          "trigger_type": {
+            "type": "string",
+            "description": "Type of trigger - auto, threshold, prediction, or emergency",
+            "enum": ["auto", "threshold", "prediction", "emergency"],
+            "default": "auto"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "send_predictive_notification",
+      "description": "Send predictive notifications based on risk analysis",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "Location for risk prediction"
+          },
+          "event_type": {
+            "type": "string",
+            "description": "Type of event to predict (infrastructure, flooding, emergency, etc.)"
+          },
+          "target_users": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of user device tokens (optional - will auto-detect users in area)"
+          }
+        },
+        "required": ["location", "event_type"]
+      }
+    }
+  ]
+}
